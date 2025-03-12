@@ -29,8 +29,9 @@ jobs:
       fail-fast: false  # 🔥 Ensures all jobs run, even if some fail
       matrix:
         terraform_version: [
-          0.14.1, # Min Supported Version (README)
-          1.3.9,  # Current Dockerfile version
+#          0.14.1, # Min Supported Version (README)
+#          1.3.9,  # Current Dockerfile version
+          1.5.0, # Should be min supported version?
           1.10.0, # Proposed new Dockerfile version
           1.11.1, # Latest version
         ]
