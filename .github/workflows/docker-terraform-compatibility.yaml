@@ -78,29 +78,57 @@ jobs:
 
           echo "::group::Testing Scenario: ${{ matrix.scenario }} with Terraform ${{ needs.extract-terraform-version.outputs.terraform_version }}"
           echo "Testing Terraform in $SCENARIO_DIR"
-
+          # Ensure the scenario directory exists
           if [ ! -d "$SCENARIO_DIR" ]; then
             echo "⚠️ Skipping ${{ matrix.scenario }} (Directory not found)"
             exit 0
           fi
-
           cd "$SCENARIO_DIR"
-
+          # Ensure whitelist.txt exists
           echo "1.1.1.1/32" > whitelist.txt
-
+          # Only run start.sh if it exists
           if [ -f "start.sh" ]; then
             sh ./start.sh || { echo "❌ start.sh failed"; exit 1; }
           fi
-
           cd terraform
-
+          # Detect required variables dynamically from .tf files
+          REQUIRED_VARS=$(grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf | sort -u)
+          # Create temporary Terraform variables file (JSON format)
+          TFVARS_FILE="terraform.auto.tfvars.json"
+          echo "{" > $TFVARS_FILE
+          # Define possible variables and values
+          declare -A VAR_MAP
+          VAR_MAP["cg_whitelist"]='["1.1.1.1/32"]'
+          VAR_MAP["cgid"]='"github-ci-test"'
+          VAR_MAP["profile"]='"default"'
+          VAR_MAP["region"]='"us-east-1"'
+          VAR_MAP["user_email"]='"cloudgoat@rhinosecuritylabs.com"'
+          # Loop through required variables and add only those that exist
+          for var in $REQUIRED_VARS; do
+            if [[ -n "${VAR_MAP[$var]}" ]]; then
+              echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
+            fi
+          done
+          # If cg_whitelist is defined in variables.tf and not already in tfvars add it
+          if grep -q 'variable "cg_whitelist"' variables.tf && ! grep -q '"cg_whitelist"' "$TFVARS_FILE"; then
+            var="cg_whitelist"
+            echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
+          fi
+          
+          # Remove trailing comma and close JSON object
+          sed -i '$ s/,$//' $TFVARS_FILE
+          echo "}" >> $TFVARS_FILE
+          # DEBUG: Print the generated tfvars file
+          echo "Generated Terraform Variables:"
+          cat $TFVARS_FILE
+          # terraform init
           terraform init || { echo "❌ Init failed"; exit 1; }
+          # terraform validate
           terraform validate || { echo "❌ Validation failed"; exit 1; }
-          terraform plan -out=tfplan -input=false -var='cg_whitelist=["1.1.1.1/32"]' || {
+          terraform plan -out=tfplan -input=false -var-file=$TFVARS_FILE || {
             echo "❌ Plan failed"; 
-            terraform plan -no-color;
+            terraform plan -no-color -var-file=$TFVARS_FILE;
             exit 1;
           }
-
-          echo "✔️ Terraform ${{ needs.extract-terraform-version.outputs.terraform_version }} works with ${{ matrix.scenario }}"
+          echo "✔️ Success: ${{ matrix.scenario }}"
           echo "::endgroup::"
