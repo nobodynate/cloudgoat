@@ -1,0 +1,159 @@
+name: Terraform Compatibility Test
+
+on:
+  pull_request:
+    paths:
+      - "cloudgoat/scenarios/**"
+      - "Dockerfile"
+  workflow_dispatch:
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      scenarios: ${{ steps.set-matrix.outputs.scenarios }}
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v3
+
+      - name: Generate scenario list
+        id: set-matrix
+        run: |
+          SCENARIOS=$(ls -1 cloudgoat/scenarios/ | grep -v '^$' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "scenarios=$SCENARIOS" >> $GITHUB_OUTPUT
+
+  validate-new-scenarios:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Allow all jobs to run even if one fails
+      matrix:
+        scenario: ${{ fromJson(needs.generate-matrix.outputs.scenarios) }}
+
+    name: Validate Scenario - ${{ matrix.scenario }}
+
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Terraform (Default Version)
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS Credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/config
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = $AWS_REGION" >> ~/.aws/config
+          export AWS_PROFILE=default
+
+      - name: Run Terraform Validation - ${{ matrix.scenario }}
+        run: |
+          ROOT_DIR="$GITHUB_WORKSPACE"
+          SCENARIO_DIR="$ROOT_DIR/cloudgoat/scenarios/${{ matrix.scenario }}/"
+
+          echo "::group::Validating Scenario: ${{ matrix.scenario }}"
+          echo "Testing Terraform in $SCENARIO_DIR"
+
+          if [ ! -d "$SCENARIO_DIR" ]; then
+            echo "⚠️ Skipping ${{ matrix.scenario }} (Directory not found)"
+            exit 0
+          fi
+
+          cd "$SCENARIO_DIR"
+
+          echo "1.1.1.1/32" > whitelist.txt
+
+          if [ -f "start.sh" ]; then
+            sh ./start.sh || { echo "❌ start.sh failed"; exit 1; }
+          fi
+
+          cd terraform
+
+          terraform init || { echo "❌ Init failed"; exit 1; }
+          terraform validate || { echo "❌ Validation failed"; exit 1; }
+
+          echo "✔️ Validation Successful: ${{ matrix.scenario }}"
+          echo "::endgroup::"
+
+  verify-docker-terraform-version:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform_version: [
+          1.5.0, # Min supported version?
+          1.10.0, # Proposed Dockerfile version
+          1.11.1, # Latest version
+        ]
+        scenario: ${{ fromJson(needs.generate-matrix.outputs.scenarios) }}
+
+    name: Terraform ${{ matrix.terraform_version }} - ${{ matrix.scenario }}
+
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Terraform ${{ matrix.terraform_version }}
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ matrix.terraform_version }}
+
+      - name: Configure AWS Credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/config
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = $AWS_REGION" >> ~/.aws/config
+          export AWS_PROFILE=default
+
+      - name: Test Terraform Version with Scenario - ${{ matrix.scenario }}
+        run: |
+          ROOT_DIR="$GITHUB_WORKSPACE"
+          SCENARIO_DIR="$ROOT_DIR/cloudgoat/scenarios/${{ matrix.scenario }}/"
+
+          echo "::group::Testing Scenario: ${{ matrix.scenario }} with Terraform ${{ matrix.terraform_version }}"
+          echo "Testing Terraform in $SCENARIO_DIR"
+
+          if [ ! -d "$SCENARIO_DIR" ]; then
+            echo "⚠️ Skipping ${{ matrix.scenario }} (Directory not found)"
+            exit 0
+          fi
+
+          cd "$SCENARIO_DIR"
+
+          echo "1.1.1.1/32" > whitelist.txt
+
+          if [ -f "start.sh" ]; then
+            sh ./start.sh || { echo "❌ start.sh failed"; exit 1; }
+          fi
+
+          cd terraform
+
+          terraform init || { echo "❌ Init failed"; exit 1; }
+          terraform validate || { echo "❌ Validation failed"; exit 1; }
+          terraform plan -out=tfplan -input=false -var='cg_whitelist=["1.1.1.1/32"]' || {
+            echo "❌ Plan failed"; 
+            terraform plan -no-color;
+            exit 1;
+          }
+
+          echo "✔️ Terraform ${{ matrix.terraform_version }} works with ${{ matrix.scenario }}"
+          echo "::endgroup::"
