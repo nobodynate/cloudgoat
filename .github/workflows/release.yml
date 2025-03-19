@@ -51,6 +51,7 @@ jobs:
           poetry version ${{ github.event.inputs.SemVer_level }}
           VERSION=$(poetry version -s)
         fi
+        sed -i "s/cloudgoat.version=\".*\"/cloudgoat.version=\"$VERSION\"/" Dockerfile
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "::set-output name=VERSION::$VERSION"
 
