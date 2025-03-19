@@ -36,7 +36,7 @@ jobs:
       - name: Bump Version
         id: bump_version
         run: |
-          poetry version ${{ SemVer_level }}
+          poetry version ${{ github.event.inputs.SemVer_level }}
           echo "VERSION=$(poetry version -s)" >> $GITHUB_ENV
 
       - name: Commit & Tag New Version
