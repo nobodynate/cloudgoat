@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cloudgoat"
-version = "2.0.2"
+version = "2.0.3"
 description = "A vulnerable AWS environment generator for Pentesters."
 authors = ["RhinoSecurityLabs"]
 readme = "README.md"
