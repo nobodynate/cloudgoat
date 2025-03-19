@@ -62,14 +62,14 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         git add pyproject.toml
         git commit -m "chore(release): bump version to ${VERSION}"
         git push origin release-v${{ env.VERSION }}
 
     - name: Create Pull Request via CLI
       run: |
-        gh auth login --with-token <<< "${{ secrets.GH_PAT }}"
+        gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh pr create \
           --base master \
           --head release-v${{ steps.determine_version.outputs.VERSION }} \
@@ -77,5 +77,5 @@ jobs:
           --body "Automated release PR for version v${{ steps.determine_version.outputs.VERSION }}" \
           --draft=false
       env:
-        GH_PAT: ${{ secrets.GH_PAT }}
+        GH_PAT: ${{ secrets.GITHUB_TOKEN }}
         GH_REPO: ${{ github.repository }}
