@@ -67,13 +67,15 @@ jobs:
         git commit -m "chore(release): bump version to ${VERSION}"
         git push origin release-v${{ env.VERSION }}
 
-    - name: Create Pull Request
-      id: create_pr
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ secrets.GH_PAT }}
-        branch: release-v${{ steps.determine_version.outputs.VERSION }}  # Fix expansion issue
-        title: "Release v${{ steps.determine_version.outputs.VERSION }}"
-        body: "Automated release PR for version v${{ steps.determine_version.outputs.VERSION }}"
-        base: master
-        draft: false
+    - name: Create Pull Request via CLI
+      run: |
+        gh auth login --with-token <<< "${{ secrets.GH_PAT }}"
+        gh pr create \
+          --base master \
+          --head release-v${{ steps.determine_version.outputs.VERSION }} \
+          --title "Release v${{ steps.determine_version.outputs.VERSION }}" \
+          --body "Automated release PR for version v${{ steps.determine_version.outputs.VERSION }}" \
+          --draft=false
+      env:
+        GH_PAT: ${{ secrets.GH_PAT }}
+        GH_REPO: ${{ github.repository }}
