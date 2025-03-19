@@ -59,13 +59,14 @@ jobs:
       run: |
         git checkout -b release-v${{ env.VERSION }}
 
-    - name: Commit Version Change
+    - name: Tag and Commit Version Change
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         git add .
         git commit -m "chore(release): bump version to ${VERSION}"
+        git tag "v${{ env.VERSION }}"
         git push origin release-v${{ env.VERSION }}
 
     - name: Create Pull Request via CLI
