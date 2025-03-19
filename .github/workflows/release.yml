@@ -1,8 +1,6 @@
 # This is triggered manually.
-# This will bump the version and publish a package to PyPi.
-# if it completes it will also trigger a new Docker image build and push to DockHub at:
-# https://github.com/RhinoSecurityLabs/pacu/blob/master/.github/workflows/deploy-docker.yml
-# 
+# This will bump the version and open a release pull request
+# Once the PR is accepted finish-release runs.
 
 
 name: Release
@@ -24,22 +22,25 @@ on:
         default: ""
           
 jobs:
-  deploy:
+  create_release_branch:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-
     steps:
-    - uses: actions/checkout@v3
+    - name Checkout Repository
+      uses: actions/checkout@v4
       with:
-        persist-credentials: false
+        fetch-depth: 0
+
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.10'
+
+    - name: Install poetry
+      run: pip install poetry
+
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install poetry
+      run: poetry install
+
     - name: Bump version
       run: |
         if [ -n "${{ github.event.inputs.SemVer_version }}" ]; then
@@ -52,21 +53,21 @@ jobs:
         ver="$(poetry version -s)"
         sed -i "s/cloudgoat.version=\".*\"/cloudgoat.version=\"$ver\"/" Dockerfile
 
-    - name: Commit and push version changes
+    - name: Create Release Branch
       run: |
-        ver="$(poetry version -s)"
+        git checkout -b release-v${{ env.VERSION }}
+    
+    - name: Commit Version Change
+      run: |
+        git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git config --global user.name "Github-Actions"
-
-        # Authenticate with PAT
         git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
-
-        git checkout -b release-v${ver}  # Create a new release branch
-        git add .
-        git commit -m "chore(release): bump version to ${ver}"
-        git push origin release-v${ver}
-
+        git add pyproject.toml
+        git commit -m "chore(release): bump version to $VERSION"
+        git push origin release-v${{ env.VERSION }}
+    
     - name: Create Pull Request
+      id: create_pr
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GH_PAT }}
@@ -75,7 +76,3 @@ jobs:
         body: "Automated release PR for version v${{ env.VERSION }}"
         base: master
         draft: false
-
-    - name: Build and publish
-      run: |
-        poetry publish --build -u "__token__" -p "${{ secrets.PYPI_TOKEN }}"
