@@ -99,7 +99,7 @@ resource "azurerm_storage_account" "storage_account" {
 
 resource "azurerm_storage_container" "storage_container" {
     name = "appazgoat${random_id.randomId.dec}-storage-container"
-    storage_account_name = azurerm_storage_account.storage_account.name
+    storage_account_id = azurerm_storage_account.storage_account.name
     container_access_type = "blob"
 }
 
@@ -160,7 +160,7 @@ resource "azurerm_storage_blob" "storage_blob" {
 }
 
 
-resource "azurerm_app_service_plan" "app_service_plan" {
+resource "azurerm_service_plan" "app_service_plan" {
   name                = "appazgoat${random_id.randomId.dec}-app-service-plan"
   resource_group_name = var.resource_group
   location            = var.location
