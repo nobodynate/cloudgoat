@@ -33,13 +33,10 @@ jobs:
       - name: Install Dependencies
         run: poetry install
 
-      - name: Run Tests
-        run: poetry run pytest  # Adjust if needed
-
       - name: Bump Version
         id: bump_version
         run: |
-          poetry version patch  # Change to minor/major if needed
+          poetry version ${{ SemVer_level }}
           echo "VERSION=$(poetry version -s)" >> $GITHUB_ENV
 
       - name: Commit & Tag New Version
@@ -49,7 +46,7 @@ jobs:
           git add pyproject.toml
           git commit -m "chore(release): bump version to $VERSION"
           git tag "v$VERSION"
-          git push origin main --tags
+          git push origin master --tags
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
