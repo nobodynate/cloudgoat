@@ -6,12 +6,15 @@
 name: Tag and Publish
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed  # Only trigger when a PR is merged
     branches:
-      - master
+      - master  # Only trigger when merged into master
 
 jobs:
   tag_and_publish:
+    if: startsWith(github.event.pull_request.head.ref, 'release-v')  # Only run for release PRs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
