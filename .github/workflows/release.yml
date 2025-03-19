@@ -7,11 +7,11 @@ on:
         type: choice
         description: Which SemVer to bump
         options: 
-        - Major
-        - Minor
-        - Patch
+        - major
+        - minor
+        - patch
         default:
-          Patch
+          patch
 
 jobs:
   release:
