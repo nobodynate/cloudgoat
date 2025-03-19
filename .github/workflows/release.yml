@@ -73,9 +73,9 @@ jobs:
         gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
         gh pr create \
           --base master \
-          --head release-v${{ steps.determine_version.outputs.VERSION }} \
-          --title "Release v${{ steps.determine_version.outputs.VERSION }}" \
-          --body "Automated release PR for version v${{ steps.determine_version.outputs.VERSION }}" \
+          --head release-v${{ env.VERSION }} \
+          --title "Release v${{ env.VERSION }}" \
+          --body "Automated release PR for version v${{ env.VERSION }}" \
           --draft=false
       env:
         GH_PAT: ${{ secrets.GITHUB_TOKEN }}
