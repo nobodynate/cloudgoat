@@ -5,22 +5,23 @@
 # 
 
 
-name: PyPi and Docker Deploy
+name: Release
 
 on: 
   workflow_dispatch:
     inputs:
-      SemVer_version:
-        type: input
-        description: manually specify the full version
-        
       SemVer_level:
         type: choice
         description: Which SemVer to bump
         options: 
-        - Major
-        - Minor
-        - Patch
+        - major
+        - minor
+        - patch
+        default: patch
+      SemVer_version:
+        type: string
+        description: "Specify an exact version (leave empty to auto-bump)"
+        default: ""
           
 jobs:
   deploy:
@@ -41,7 +42,13 @@ jobs:
         pip install poetry
     - name: Bump version
       run: |
-        poetry version ${{ github.event.inputs.SemVer_level }}
+        if [ -n "${{ github.event.inputs.SemVer_version }}" ]; then
+          VERSION=${{ github.event.inputs.SemVer_version }}
+          poetry version "$VERSION"
+        else
+          poetry version ${{ github.event.inputs.SemVer_level }}
+          VERSION=$(poetry version -s)
+        fi
         ver="$(poetry version -s)"
         sed -i "s/cloudgoat.version=\".*\"/cloudgoat.version=\"$ver\"/" Dockerfile
     - name: Commit and push version changes
