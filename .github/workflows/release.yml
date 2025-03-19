@@ -1,9 +1,17 @@
 name: Release
 
-on:
-  push:
-    branches:
-      - main
+on: 
+  workflow_dispatch:
+    inputs:
+      SemVer_level:
+        type: choice
+        description: Which SemVer to bump
+        options: 
+        - Major
+        - Minor
+        - Patch
+        default:
+          Patch
 
 jobs:
   release:
