@@ -49,7 +49,7 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 resource "azurerm_storage_container" "storage_container" {
-    name = "appazgoat${var.cgid}-storage-container"
+    name = "${var.cgid}-storage-container"
     storage_account_id = azurerm_storage_account.storage_account.id
     container_access_type = "blob"
 }
@@ -64,7 +64,7 @@ resource "azurerm_storage_blob" "storage_blob" {
 }
 
 resource "azurerm_service_plan" "app_service_plan" {
-  name                = "appazgoat${var.cgid}-app-service-plan"
+  name                = "${var.cgid}-app-service-plan"
   resource_group_name = var.resource_group
   location            = var.region
   os_type             = "Linux"  # Required
@@ -74,7 +74,7 @@ resource "azurerm_service_plan" "app_service_plan" {
 }
 
 resource "azurerm_linux_function_app" "function_app" {
-  name                       = "appazgoat${var.cgid}-function"
+  name                       = "${var.cgid}-function"
   resource_group_name        = var.resource_group
   location                   = var.region
   service_plan_id            = azurerm_service_plan.app_service_plan.id
