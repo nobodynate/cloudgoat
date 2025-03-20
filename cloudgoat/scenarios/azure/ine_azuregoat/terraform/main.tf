@@ -29,7 +29,7 @@ resource "azurerm_cosmosdb_account" "db" {
 
 
 resource "azurerm_storage_account" "storage_account" {
-  name = "appazgoat${var.cgid}storage"
+  name = "${var.cgid}storage"
   resource_group_name = var.resource_group
   location = var.region
   account_tier = "Standard"
