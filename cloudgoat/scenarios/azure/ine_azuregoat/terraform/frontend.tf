@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "storage_blob_front" {
 
 
 resource "azurerm_linux_function_app" "function_app_front" {
-  name                       = "appazgoat${random_id.randomId.dec}-function-app"
+  name                       = "appazgoat${vars.gcid}-function-app"
   resource_group_name        = var.resource_group
   location                   = var.region
   service_plan_id            = azurerm_service_plan.app_service_plan.id

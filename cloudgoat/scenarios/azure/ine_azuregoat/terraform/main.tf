@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "azuregoat" {
 }
 
 resource "azurerm_cosmosdb_account" "db" {
-  name                = "ine-cosmos-db-data-${random_id.randomId.dec}"
+  name                = "ine-cosmos-db-data-${vars.gcid}"
   location            = var.region
   resource_group_name = var.resource_group
   offer_type          = "Standard"
@@ -29,7 +29,7 @@ resource "azurerm_cosmosdb_account" "db" {
 
 
 resource "azurerm_storage_account" "storage_account" {
-  name = "appazgoat${random_id.randomId.dec}storage"
+  name = "appazgoat${vars.gcid}storage"
   resource_group_name = var.resource_group
   location = var.region
   account_tier = "Standard"
@@ -49,7 +49,7 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 resource "azurerm_storage_container" "storage_container" {
-    name = "appazgoat${random_id.randomId.dec}-storage-container"
+    name = "appazgoat${vars.gcid}-storage-container"
     storage_account_id = azurerm_storage_account.storage_account.id
     container_access_type = "blob"
 }
@@ -64,7 +64,7 @@ resource "azurerm_storage_blob" "storage_blob" {
 }
 
 resource "azurerm_service_plan" "app_service_plan" {
-  name                = "appazgoat${random_id.randomId.dec}-app-service-plan"
+  name                = "appazgoat${vars.gcid}-app-service-plan"
   resource_group_name = var.resource_group
   location            = var.region
   os_type             = "Linux"  # Required
@@ -74,7 +74,7 @@ resource "azurerm_service_plan" "app_service_plan" {
 }
 
 resource "azurerm_linux_function_app" "function_app" {
-  name                       = "appazgoat${random_id.randomId.dec}-function"
+  name                       = "appazgoat${vars.gcid}-function"
   resource_group_name        = var.resource_group
   location                   = var.region
   service_plan_id            = azurerm_service_plan.app_service_plan.id
@@ -101,18 +101,6 @@ resource "azurerm_linux_function_app" "function_app" {
   }
   depends_on = [azurerm_resource_group.azuregoat, azurerm_cosmosdb_account.db,azurerm_storage_account.storage_account,null_resource.env_replace]
 }
-
-
-# Generate random text for a unique storage account name
-resource "random_id" "randomId" {
-  keepers = {
-    # Generate a new ID only when a new resource group is defined
-    resource_group_name = var.resource_group
-  }
-
-  byte_length = 3
-}
-
 
 resource "azurerm_automation_runbook" "dev_automation_runbook" {
   name                    = "Get-AzureVM"
