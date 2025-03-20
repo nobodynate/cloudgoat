@@ -56,7 +56,10 @@ EOF
 }
 
 resource "azurerm_storage_blob" "app_files_prod" {
-  for_each               = fileset("./../assets/resources/storage_account/", "**")
+  for_each = {
+    for file in fileset("./../assets/resources/storage_account/", "**") :
+    file => file if length(regexall("\\.bak$", file)) == 0
+  }
   name                   = each.value
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_prod.name
@@ -67,7 +70,10 @@ resource "azurerm_storage_blob" "app_files_prod" {
 }
 
 resource "azurerm_storage_blob" "app_files_dev" {
-  for_each               = fileset("./../assets/resources/storage_account/", "**")
+  for_each = {
+    for file in fileset("./../assets/resources/storage_account/", "**") :
+    file => file if length(regexall("\\.bak$", file)) == 0
+  }
   name                   = each.value
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_dev.name
