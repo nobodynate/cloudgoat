@@ -50,7 +50,7 @@ resource "azurerm_storage_account" "storage_account" {
 
 resource "azurerm_storage_container" "storage_container" {
     name = "appazgoat${random_id.randomId.dec}-storage-container"
-    storage_account_id = azurerm_storage_account.storage_account.name
+    storage_account_id = azurerm_storage_account.storage_account.id
     container_access_type = "blob"
 }
 
@@ -82,7 +82,7 @@ resource "azurerm_linux_function_app" "function_app" {
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
 
   app_settings = {
-    "WEBSITE_RUN_FROM_PACKAGE" = "https://${azurerm_storage_account.storage_account.name}.blob.core.windows.net/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob.name}${data.azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
+    "WEBSITE_RUN_FROM_PACKAGE" = "https://${azurerm_storage_account.storage_account.id}.blob.core.windows.net/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob.name}${data.azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
     "FUNCTIONS_WORKER_RUNTIME" = "python",
     "JWT_SECRET"               = "T2BYL6#]zc>Byuzu",
     "AZ_DB_ENDPOINT"           = azurerm_cosmosdb_account.db.endpoint,

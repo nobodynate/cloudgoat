@@ -137,7 +137,7 @@ resource "azurerm_virtual_machine_extension" "test" {
   settings = <<SETTINGS
     {
         "script": "${base64encode(templatefile("../assets/resources/vm/config.sh", {
-          URL="${azurerm_storage_account.storage_account.name}.blob.core.windows.net/${azurerm_storage_container.storage_container_prod.name}"
+          URL="${azurerm_storage_account.storage_account.id}.blob.core.windows.net/${azurerm_storage_container.storage_container_prod.name}"
         }))}"
     }
 SETTINGS
