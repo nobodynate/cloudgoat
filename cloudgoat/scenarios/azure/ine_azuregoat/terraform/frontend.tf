@@ -9,7 +9,7 @@ data "archive_file" "file_function_app_front" {
 }
 
 resource "azurerm_storage_blob" "storage_blob_front" {
-  name = "../assets/resources/azure_function/react/func.zip"
+  name = "modules/module-1/resources/azure_function/react/func.zip"
   storage_account_name = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container.name
   type = "Block"
@@ -26,7 +26,7 @@ resource "azurerm_linux_function_app" "function_app_front" {
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
   app_settings = {
-    "WEBSITE_RUN_FROM_PACKAGE"    = "https://${azurerm_storage_account.storage_account.id}.blob.core.windows.net/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob_front.name}${data.azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
+    "WEBSITE_RUN_FROM_PACKAGE"    = "https://${azurerm_storage_account.storage_account.name}.blob.core.windows.net/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob_front.name}${data.azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
     FUNCTIONS_WORKER_RUNTIME = "node",
     "AzureWebJobsDisableHomepage" = "true",
     FUNCTIONS_EXTENSION_VERSION = "~3"
@@ -52,7 +52,7 @@ resource "null_resource" "file_replacement_vm_ip" {
 }
 
 resource "azurerm_storage_blob" "config_update_prod" {
-  name                   = "../assets/resources/storage_account/shared/files/.ssh/config.txt"
+  name                   = "modules/module-1/resources/storage_account/shared/files/.ssh/config.txt"
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_prod.name
   type                   = "Block"
@@ -61,7 +61,7 @@ resource "azurerm_storage_blob" "config_update_prod" {
 }
 
 resource "azurerm_storage_blob" "config_update_dev" {
-  name                   = "../assets/resources/storage_account/shared/files/.ssh/config.txt"
+  name                   = "modules/module-1/resources/storage_account/shared/files/.ssh/config.txt"
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_dev.name
   type                   = "Block"
@@ -70,7 +70,7 @@ resource "azurerm_storage_blob" "config_update_dev" {
 }
 
 resource "azurerm_storage_blob" "config_update_vm" {
-  name                   = "../assets/resources/storage_account/shared/files/.ssh/config.txt"
+  name                   = "modules/module-1/resources/storage_account/shared/files/.ssh/config.txt"
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_vm.name
   type                   = "Block"

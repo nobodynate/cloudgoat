@@ -1,4 +1,4 @@
-import os
+
 import json
 from optparse import Values
 import time
@@ -49,9 +49,8 @@ container = database.create_container_if_not_exists(
     partition_key=PartitionKey(path="/id")
 )
 
-working_dir = os.path.dirname(__file__)
-blog_users_path = os.path.join(working_dir, 'blog-users.json')
-db_file_json_1 = open(blog_users_path)
+
+db_file_json_1 = open('../assets/resources/cosmosdb/blog-users.json')
 db_file_1 = json.loads(db_file_json_1.read())
 for db_item_1 in db_file_1:
    container.upsert_item(body=db_item_1)
@@ -62,8 +61,7 @@ container = database.create_container_if_not_exists(
     partition_key=PartitionKey(path="/id")
 )
 
-blog_posts_path = os.path.join(working_dir, 'blog-posts.json')
-db_file_json_2 = open(blog_posts_path)
+db_file_json_2 = open('../assets/resources/cosmosdb/blog-posts.json')
 db_file_2 = json.loads(db_file_json_2.read())
 for db_item_2 in db_file_2:
    container.upsert_item(body=db_item_2)

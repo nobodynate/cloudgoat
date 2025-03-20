@@ -1,11 +1,11 @@
 workflow Get-AzureVM
 {
     Disable-AzContextAutosave -Scope Process
-    $AzureContext = (Connect-AzAccount -Identity -AccountId 2bf54b19-13d0-448b-adbc-2f03060d2eb5).context
+    $AzureContext = (Connect-AzAccount -Identity -AccountId REPLACE_CLIENT_ID).context
 	$AzureContext = Set-AzContext -SubscriptionName $AzureContext.Subscription -DefaultProfile $AzureContext
 
 
-    $VMs = Get-AzVM -ResourceGroupName azuregoat_app
+    $VMs = Get-AzVM -ResourceGroupName REPLACE_RESOURCE_GROUP_NAME
 
     
 	Write-Output "Finding VM"
