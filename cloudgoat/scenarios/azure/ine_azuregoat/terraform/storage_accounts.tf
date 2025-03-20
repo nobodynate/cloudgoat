@@ -58,7 +58,7 @@ EOF
 resource "azurerm_storage_blob" "app_files_prod" {
   for_each               = fileset("./../assets/resources/storage_account/", "**")
   name                   = each.value
-  storage_account_name   = azurerm_storage_account.storage_account.name
+  storage_account_id   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_prod.name
   content_type           = lookup(tomap(local.mime_types), element(split(".", each.value), length(split(".", each.value)) - 1))
   type                   = "Block"
@@ -69,7 +69,7 @@ resource "azurerm_storage_blob" "app_files_prod" {
 resource "azurerm_storage_blob" "app_files_dev" {
   for_each               = fileset("./../assets/resources/storage_account/", "**")
   name                   = each.value
-  storage_account_name   = azurerm_storage_account.storage_account.name
+  storage_account_id   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_dev.name
   content_type           = lookup(tomap(local.mime_types), element(split(".", each.value), length(split(".", each.value)) - 1))
   type                   = "Block"
