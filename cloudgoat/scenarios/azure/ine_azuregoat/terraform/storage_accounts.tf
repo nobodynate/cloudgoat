@@ -44,11 +44,11 @@ resource "null_resource" "file_replacement_upload" {
   provisioner "local-exec" {
     command     = <<EOF
 pwd
-sed -i 's/="\//="https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\//g' ../assets/resources/azure_function/react/webapp/index.html
-sed -i 's/"\/static/"https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\/static/g' ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
-sed -i 's/"\/static/"https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\/static/g' ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
-sed -i 's/n.p+"static/"https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\/static/g' ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
-sed -i "s,AZURE_FUNCTION_URL,https:\/\/${azurerm_linux_function_app.function_app.default_hostname},g" ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
+sed -i.bak 's/="\//="https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\//g' ../assets/resources/azure_function/react/webapp/index.html
+sed -i.bak 's/"\/static/"https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\/static/g' ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
+sed -i.bak 's/"\/static/"https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\/static/g' ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
+sed -i.bak 's/n.p+"static/"https:\/\/${azurerm_storage_account.storage_account.id}\.blob\.core\.windows\.net\/${azurerm_storage_container.storage_container_prod.name}\/webfiles\/build\/static/g' ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
+sed -i.bak "s,AZURE_FUNCTION_URL,https:\/\/${azurerm_linux_function_app.function_app.default_hostname},g" ../assets/resources/storage_account/webfiles/build/static/js/main.adc6b28e.js
 EOF 
     interpreter = ["/bin/bash", "-c"]
   }

@@ -45,7 +45,7 @@ resource "azurerm_linux_function_app" "function_app_front" {
 
 resource "null_resource" "file_replacement_vm_ip" {
   provisioner "local-exec" {
-    command     = "sed -i 's/VM_IP_ADDR/${data.azurerm_public_ip.vm_ip.ip_address}/g' ../assets/resources/storage_account/shared/files/.ssh/config.txt"
+    command     = "sed -i.bak 's/VM_IP_ADDR/${data.azurerm_public_ip.vm_ip.ip_address}/g' ../assets/resources/storage_account/shared/files/.ssh/config.txt"
     interpreter = ["/bin/bash", "-c"]
   }
   depends_on = [azurerm_resource_group.azuregoat, azurerm_virtual_machine.dev-vm,data.azurerm_public_ip.vm_ip]
