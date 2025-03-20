@@ -67,41 +67,38 @@ resource "azurerm_service_plan" "app_service_plan" {
   name                = "appazgoat${random_id.randomId.dec}-app-service-plan"
   resource_group_name = var.resource_group
   location            = var.region
-  kind                = "FunctionApp"
-  reserved            = true
-  sku {
-    tier = "Basic"
-    size = "B1"
-  }
-  depends_on = [azurerm_resource_group.azuregoat]
+  os_type             = "Linux"  # Required
+  sku_name            = "B1"     # Required
 
+  depends_on = [azurerm_resource_group.azuregoat]
 }
 
-resource "azurerm_function_app" "function_app" {
+resource "azurerm_linux_function_app" "function_app" {
   name                       = "appazgoat${random_id.randomId.dec}-function"
   resource_group_name        = var.resource_group
   location                   = var.region
-  app_service_plan_id        = azurerm_app_service_plan.app_service_plan.id
+  service_plan_id            = azurerm_service_plan.app_service_plan.id
+  storage_account_name       = azurerm_storage_account.storage_account.name
+  storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
+
   app_settings = {
-    "WEBSITE_RUN_FROM_PACKAGE"    = "https://${azurerm_storage_account.storage_account.name}.blob.core.windows.net/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob.name}${data.azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
-    FUNCTIONS_WORKER_RUNTIME = "python",
-    "JWT_SECRET" = "T2BYL6#]zc>Byuzu",
-    "AZ_DB_ENDPOINT" = "${azurerm_cosmosdb_account.db.endpoint}",
-    "AZ_DB_PRIMARYKEY" = "${azurerm_cosmosdb_account.db.primary_key}",
-    "CON_STR" = "${azurerm_storage_account.storage_account.primary_connection_string}"
-    "CONTAINER_NAME" = "${azurerm_storage_container.storage_container.name}"
+    "WEBSITE_RUN_FROM_PACKAGE" = "https://${azurerm_storage_account.storage_account.name}.blob.core.windows.net/${azurerm_storage_container.storage_container.name}/${azurerm_storage_blob.storage_blob.name}${data.azurerm_storage_account_blob_container_sas.storage_account_blob_container_sas.sas}",
+    "FUNCTIONS_WORKER_RUNTIME" = "python",
+    "JWT_SECRET"               = "T2BYL6#]zc>Byuzu",
+    "AZ_DB_ENDPOINT"           = azurerm_cosmosdb_account.db.endpoint,
+    "AZ_DB_PRIMARYKEY"         = azurerm_cosmosdb_account.db.primary_key,
+    "CON_STR"                  = azurerm_storage_account.storage_account.primary_connection_string,
+    "CONTAINER_NAME"           = azurerm_storage_container.storage_container.name
   }
-  os_type = "linux"
+
   site_config {
-    linux_fx_version = "python|3.9"
-    use_32_bit_worker_process = false
+    application_stack {
+      python_version = "3.9"
+    }
     cors {
       allowed_origins = ["*"]
     }
   }
-  storage_account_name       = azurerm_storage_account.storage_account.name
-  storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
-  version                    = "~3"
   depends_on = [azurerm_resource_group.azuregoat, azurerm_cosmosdb_account.db,azurerm_storage_account.storage_account,null_resource.env_replace]
 }
 
