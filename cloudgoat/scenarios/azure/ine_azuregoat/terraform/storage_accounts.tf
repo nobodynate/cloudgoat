@@ -20,20 +20,20 @@ locals {
 
 
 resource "azurerm_storage_container" "storage_container_prod" {
-  name                  = "prod-appazgoat${vars.gcid}-storage-container"
+  name                  = "prod-appazgoat${var.cgid}-storage-container"
   storage_account_id  = azurerm_storage_account.storage_account.id
   container_access_type = "blob"
 }
 
 
 resource "azurerm_storage_container" "storage_container_dev" {
-  name                  = "dev-appazgoat${vars.gcid}-storage-container"
+  name                  = "dev-appazgoat${var.cgid}-storage-container"
   storage_account_id  = azurerm_storage_account.storage_account.id
   container_access_type = "container"
 }
 
 resource "azurerm_storage_container" "storage_container_vm" {
-  name                  = "vm-appazgoat${vars.gcid}-storage-container"
+  name                  = "vm-appazgoat${var.cgid}-storage-container"
   storage_account_id  = azurerm_storage_account.storage_account.id
   container_access_type = "container"
 }

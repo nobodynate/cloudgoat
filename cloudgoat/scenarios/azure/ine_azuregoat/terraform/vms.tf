@@ -2,7 +2,7 @@
 #################################################################################
 # Security group
 resource "azurerm_network_security_group" "net_sg" {
-  name                = "SecGroupNet${vars.gcid}"
+  name                = "SecGroupNet${var.cgid}"
   location            = var.region
   resource_group_name = var.resource_group
 
@@ -24,7 +24,7 @@ resource "azurerm_network_security_group" "net_sg" {
 
 # Virtual network
 resource "azurerm_virtual_network" "vNet" {
-  name                = "vNet${vars.gcid}"
+  name                = "vNet${var.cgid}"
   address_space       = ["10.1.0.0/16"]
   location            = var.region
   resource_group_name = var.resource_group
@@ -32,7 +32,7 @@ resource "azurerm_virtual_network" "vNet" {
 
 }
 resource "azurerm_subnet" "vNet_subnet" {
-  name                 = "Subnet${vars.gcid}"
+  name                 = "Subnet${var.cgid}"
   resource_group_name  = var.resource_group
   virtual_network_name = azurerm_virtual_network.vNet.name
   address_prefixes     = ["10.1.0.0/24"]
@@ -43,12 +43,12 @@ resource "azurerm_subnet" "vNet_subnet" {
 
 #public ip
 resource "azurerm_public_ip" "VM_PublicIP" {
-  name                    = "developerVMPublicIP${vars.gcid}"
+  name                    = "developerVMPublicIP${var.cgid}"
   resource_group_name     = var.resource_group
   location                = var.region
   allocation_method       = "Dynamic"
   idle_timeout_in_minutes = 4
-  domain_name_label       = lower("developervm-${vars.gcid}")
+  domain_name_label       = lower("developervm-${var.cgid}")
   sku                     = "Basic"
   depends_on = [azurerm_resource_group.azuregoat]
 
@@ -87,7 +87,7 @@ resource "azurerm_network_interface_security_group_association" "example" {
 #Virtual Machine
 resource "azurerm_virtual_machine" "dev-vm" {
 
-  name                  = "developerVM${vars.gcid}"
+  name                  = "developerVM${var.cgid}"
   location              = var.region
   resource_group_name   = var.resource_group
   network_interface_ids = [azurerm_network_interface.net_int.id]

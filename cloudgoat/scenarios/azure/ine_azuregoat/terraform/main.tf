@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "azuregoat" {
 }
 
 resource "azurerm_cosmosdb_account" "db" {
-  name                = "ine-cosmos-db-data-${vars.gcid}"
+  name                = "ine-cosmos-db-data-${var.cgid}"
   location            = var.region
   resource_group_name = var.resource_group
   offer_type          = "Standard"
@@ -29,7 +29,7 @@ resource "azurerm_cosmosdb_account" "db" {
 
 
 resource "azurerm_storage_account" "storage_account" {
-  name = "appazgoat${vars.gcid}storage"
+  name = "appazgoat${var.cgid}storage"
   resource_group_name = var.resource_group
   location = var.region
   account_tier = "Standard"
@@ -49,7 +49,7 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 resource "azurerm_storage_container" "storage_container" {
-    name = "appazgoat${vars.gcid}-storage-container"
+    name = "appazgoat${var.cgid}-storage-container"
     storage_account_id = azurerm_storage_account.storage_account.id
     container_access_type = "blob"
 }
@@ -64,7 +64,7 @@ resource "azurerm_storage_blob" "storage_blob" {
 }
 
 resource "azurerm_service_plan" "app_service_plan" {
-  name                = "appazgoat${vars.gcid}-app-service-plan"
+  name                = "appazgoat${var.cgid}-app-service-plan"
   resource_group_name = var.resource_group
   location            = var.region
   os_type             = "Linux"  # Required
@@ -74,7 +74,7 @@ resource "azurerm_service_plan" "app_service_plan" {
 }
 
 resource "azurerm_linux_function_app" "function_app" {
-  name                       = "appazgoat${vars.gcid}-function"
+  name                       = "appazgoat${var.cgid}-function"
   resource_group_name        = var.resource_group
   location                   = var.region
   service_plan_id            = azurerm_service_plan.app_service_plan.id

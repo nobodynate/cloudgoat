@@ -27,11 +27,11 @@ resource "azurerm_user_assigned_identity" "user_id" {
   location              = var.region
   depends_on = [azurerm_resource_group.azuregoat]
 
-  name = "user-assigned-id${vars.gcid}"
+  name = "user-assigned-id${var.cgid}"
 }
 
 resource "azurerm_automation_account" "dev_automation_account_test" {
-  name                = "dev-automation-account-appazgoat${vars.gcid}"
+  name                = "dev-automation-account-appazgoat${var.cgid}"
   location              = var.region
   resource_group_name = var.resource_group
   sku_name            = "Basic"
