@@ -376,10 +376,15 @@ class CloudGoat:
             cgid = os.path.basename(self.instance_path)
 
         tf_vars = {"cgid": cgid, "cg_whitelist": self.cg_whitelist}
+        
         if self.scenario_cloud_platform == 'aws':
             tf_vars.update({"profile": self.profile, "region": self.aws_region})
+        
         if self.scenario_cloud_platform == 'azure':
-            tf_vars.update({"subscription_id": self.azure_subscription_id})
+            # cgid is used in resource names and many azure resource names don't allow _
+            tf_vars['cgid'] = cgid.split('_')[-1]
+            tf_vars["subscription_id"] = self.azure_subscription_id
+        
         if self.scenario_name == "detection_evasion":
             tf_vars["user_email"] = self.get_user_email()
 
