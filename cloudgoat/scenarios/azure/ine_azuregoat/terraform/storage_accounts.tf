@@ -80,12 +80,16 @@ resource "azurerm_storage_blob" "app_files_dev" {
 
 
 resource "azurerm_storage_blob" "app_files_vm" {
-  for_each               = fileset("./../assets/resources/storage_account/", "**")
+  for_each = {
+    for file in fileset("./../assets/resources/storage_account/", "**") :
+    file => file if length(regexall("\\.bak$", file)) == 0
+  }
+
   name                   = each.value
   storage_account_name   = azurerm_storage_account.storage_account.name
   storage_container_name = azurerm_storage_container.storage_container_vm.name
   content_type           = lookup(tomap(local.mime_types), element(split(".", each.value), length(split(".", each.value)) - 1))
   type                   = "Block"
   source                 = "./../assets/resources/storage_account/${each.value}"
-  depends_on = [azurerm_resource_group.azuregoat, null_resource.file_replacement_upload,azurerm_storage_container.storage_container_vm]
+  depends_on             = [azurerm_resource_group.azuregoat, null_resource.file_replacement_upload, azurerm_storage_container.storage_container_vm]
 }
