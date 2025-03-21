@@ -28,7 +28,7 @@ jobs:
 
           MODIFIED_SCENARIOS=$(git diff --name-only "$BASE_COMMIT" HEAD \
             | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+' \
-            | cut -d/ -f3,4 \
+            | cut -d/ -f4 \
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
