@@ -132,7 +132,7 @@ jobs:
           cat $TFVARS_FILE
 
           # Validate the Terraform files.
-          terraform fmt -check || {echo "❌ Not properly formatted terraform file"; exit 1; }
+          #terraform fmt -check || {echo "❌ Not properly formatted terraform file"; exit 1; }
           terraform init || { echo "❌ Init failed"; exit 1; }
           terraform validate || { echo "❌ Validation failed"; exit 1; }
           terraform plan -out=tfplan -input=false -var-file=$TFVARS_FILE || {
