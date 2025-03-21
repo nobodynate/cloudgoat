@@ -99,9 +99,7 @@ jobs:
           fi
 
           cd terraform
-          REQUIRED_USED_VARS=$(grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf | sort -u)
-          REQUIRED_DECALRED_VARS=$(grep -ohP '(?<=variable \")[a-zA-Z0-9_]+' *.tf | sort -u)
-          REQUIRED_VARS=$(cat $REQUIRED_USED_VARS $REQUIRED_DECLARED_VARS | sort -u)
+          REQUIRED_VARS=$((grep -ohP '(?<=variable \")[a-zA-Z0-9_]+' *.tf && grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf) | sort -u)
           TFVARS_FILE="terraform.auto.tfvars.json"
           echo "{" > $TFVARS_FILE
           declare -A VAR_MAP
