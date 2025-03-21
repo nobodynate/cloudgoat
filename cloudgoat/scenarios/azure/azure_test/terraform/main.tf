@@ -22,7 +22,7 @@ provider "azurerm" {
 }
 
 variable "subscription_id" {
-  description = "The Azure Subscription ID to use when deploying resources"
+  description = "The Aazure Subscription ID to use when deploying resources"
   type = string
 }
 
