@@ -133,7 +133,6 @@ jobs:
           terraform validate || { echo "❌ Validation failed"; exit 1; }
           terraform plan -out=tfplan -input=false -var-file=$TFVARS_FILE || {
             echo "❌ Plan failed"; 
-            terraform plan -no-color -var-file=$TFVARS_FILE;
             exit 1;
           }
           echo "✔️ Success: ${{ matrix.scenario }}"
