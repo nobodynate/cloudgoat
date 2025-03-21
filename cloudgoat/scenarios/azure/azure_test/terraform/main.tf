@@ -46,7 +46,7 @@ variable "location" {
   default = "westus"
 }
 
-resource "azurerm_resource_group" "poc" {
+resource "azurerm_resource_group" "pooc" {
   name     = var.resource_group
   location = var.location
 }
