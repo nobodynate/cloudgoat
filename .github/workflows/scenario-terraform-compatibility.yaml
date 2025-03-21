@@ -107,6 +107,7 @@ jobs:
           VAR_MAP["cgid"]='"github-ci-test"'
           VAR_MAP["profile"]='"default"'
           VAR_MAP["region"]='"us-east-1"'
+          VAR_MAP["subscription_id"]=${{ secrets.AZURE_SUBSCRIPTION_ID }}
           VAR_MAP["user_email"]='"cloudgoat@rhinosecuritylabs.com"'
 
           for var in $REQUIRED_VARS; do
