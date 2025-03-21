@@ -2,9 +2,7 @@ name: Scenario Terraform validation
 
 on:
   pull_request_target:
-    paths:
-      - "cloudgoat/scenarios/**"
-  workflow_dispatch:
+    types: [opened, synchronize, reopened]
 
 jobs:
   detect-modified-scenarios:
@@ -12,26 +10,38 @@ jobs:
     outputs:
       scenarios: ${{ steps.get-scenarios.outputs.scenarios }}
     steps:
-      - name: Checkout full repository
+      - name: Checkout PR code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 2  # Ensures we can detect changes in the last commit
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
-      - name: Detect Modified Scenarios
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
+
+      - name: Get modified scenarios
         id: get-scenarios
         run: |
-          # Detect modified scenarios
-          MODIFIED_SCENARIOS=$(git diff --name-only HEAD^ HEAD | grep -oE 'cloudgoat/scenarios/[^/]*/' | sort -u | sed 's|cloudgoat/scenarios/||;s|/||' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          BASE_COMMIT=$(git rev-parse origin/${{ github.event.pull_request.base.ref }})
+          echo "Base commit: $BASE_COMMIT"
+          echo "HEAD: $(git rev-parse HEAD)"
 
-          # If no modified scenarios were found, fallback to listing all scenarios
+          MODIFIED_SCENARIOS=$(git diff --name-only "$BASE_COMMIT" HEAD \
+            | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+' \
+            | cut -d/ -f4 \
+            | sort -u \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
           if [ "$MODIFIED_SCENARIOS" == "[]" ] || [ -z "$MODIFIED_SCENARIOS" ]; then
             echo "No modified scenarios detected. Listing all scenarios..."
-            MODIFIED_SCENARIOS=$(ls -d cloudgoat/scenarios/*/* | xargs -n 1 basename | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            MODIFIED_SCENARIOS=$(find cloudgoat/scenarios/ -mindepth 2 -maxdepth 2 -type d \
+              | sed 's|cloudgoat/scenarios/||' \
+              | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
 
           echo "Scenarios to test: $MODIFIED_SCENARIOS"
           echo "scenarios=$MODIFIED_SCENARIOS" >> $GITHUB_OUTPUT
-
+                    
   validate-new-scenarios:
     needs: detect-modified-scenarios
     runs-on: ubuntu-latest
@@ -78,7 +88,7 @@ jobs:
       - name: Run Terraform Validation - ${{ matrix.scenario }}
         run: |
           ROOT_DIR="$GITHUB_WORKSPACE"
-          SCENARIO_DIR=$(find "$ROOT_DIR/cloudgoat/scenarios" -type d -name "${{ matrix.scenario }}" 2>/dev/null | head -n 1)
+          SCENARIO_DIR=$(find "$ROOT_DIR/cloudgoat/scenarios" -type d -name "${{ matrix.scenario }}" | head -n 1)
 
           echo "::group::Testing Scenario: ${{ matrix.scenario }} with Terraform ${{ needs.extract-terraform-version.outputs.terraform_version }}"
           echo "Testing Terraform in $SCENARIO_DIR"
