@@ -22,7 +22,7 @@ provider "azurerm" {
 }
 
 variable "subscription_id" {
-  description = "The Azure Subscription ID to use when deploying resources"
+  description = "Thae asdfds aaSubdddscription ID to use when deploying resources"
   type = string
 }
 
@@ -46,7 +46,7 @@ variable "location" {
   default = "westus"
 }
 
-resource "azurerm_resource_group" "poc" {
+resource "azurerm_resource_group" "pooc" {
   name     = var.resource_group
   location = var.location
 }
