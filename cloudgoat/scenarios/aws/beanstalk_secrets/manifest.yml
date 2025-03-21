@@ -2,7 +2,7 @@
   # The name of the scenario, alpha-numeric characters only, and underscore-separated
 - name: beanstalk_secrets
   # The name of the author(s), comma separated
-- author: Tyler Ramsbey
+- author: Tyler Ramsbeyaaa
   # The version of the scenario, where major versions are breaking changes and minor are small fixes.
 - version: 1.0
   # Text displayed to the user when they type "{{ scenario_name }} help"
