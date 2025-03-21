@@ -99,7 +99,11 @@ jobs:
           fi
 
           cd terraform
+
+          # Scan the TF files and find declared and used variables
           REQUIRED_VARS=$((grep -ohP '(?<=variable \")[a-zA-Z0-9_]+' *.tf && grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf) | sort -u)
+          
+          # Populate TF Vars
           TFVARS_FILE="terraform.auto.tfvars.json"
           echo "{" > $TFVARS_FILE
           declare -A VAR_MAP
@@ -107,6 +111,7 @@ jobs:
           VAR_MAP["cgid"]='"github-ci-test"'
           VAR_MAP["profile"]='"default"'
           VAR_MAP["region"]='"us-east-1"'
+          VAR_MAP["location"]='"eastus"'
           VAR_MAP["subscription_id"]='"${{ secrets.AZURE_SUBSCRIPTION_ID }}"'
           VAR_MAP["user_email"]='"cloudgoat@rhinosecuritylabs.com"'
 
@@ -118,17 +123,14 @@ jobs:
             fi
           done
 
-          if grep -q 'variable "cg_whitelist"' *.tf && ! grep -q '"cg_whitelist"' "$TFVARS_FILE"; then
-            var="cg_whitelist"
-            echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
-          fi
-
           sed -i '$ s/,$//' $TFVARS_FILE
           echo "}" >> $TFVARS_FILE
 
           echo "Generated Terraform Variables:"
           cat $TFVARS_FILE
 
+          # Validate the Terraform files.
+          terraform fmt -check || {echo "❌ Not properly formatted terraform file"; exit 1; }
           terraform init || { echo "❌ Init failed"; exit 1; }
           terraform validate || { echo "❌ Validation failed"; exit 1; }
           terraform plan -out=tfplan -input=false -var-file=$TFVARS_FILE || {
