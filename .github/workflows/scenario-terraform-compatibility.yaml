@@ -17,26 +17,29 @@ jobs:
         with:
           fetch-depth: 0 # Ensures full history for diff calculations
 
-      - name: Get pre-PR commit (base branch commit)
+      - name: Get modified scenarios dynamically
+        id: get-scenarios
         run: |
           BASE_COMMIT=${{ github.event.pull_request.base.sha }}
-          echo "Base commit before PR: $BASE_COMMIT"
-          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
-      - name: Get modified scenarios dynamically
-        run: |
-          # Compare against the base commit (pre-PR head)
-          MODIFIED_SCENARIOS=$(git diff --name-only $BASE_COMMIT HEAD | grep -oE 'cloudgoat/scenarios/[^/]+' | sort -u | sed 's/cloudgoat\/scenarios\///' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          
+          # Get changed paths like: cloudgoat/scenarios/aws/scenario-name/*
+          MODIFIED_SCENARIOS=$(git diff --name-only "$BASE_COMMIT" HEAD \
+            | grep -oE 'cloudgoat/scenarios/[^/]+/[^/]+' \
+            | sort -u \
+            | sed 's|cloudgoat/scenarios/||' \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
           # If no modified scenarios were found, fallback to listing all scenarios
           if [ "$MODIFIED_SCENARIOS" == "[]" ] || [ -z "$MODIFIED_SCENARIOS" ]; then
             echo "No modified scenarios detected. Listing all scenarios..."
-            MODIFIED_SCENARIOS=$(ls -d cloudgoat/scenarios/*/* | xargs -n 1 basename | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            MODIFIED_SCENARIOS=$(find cloudgoat/scenarios/ -mindepth 2 -maxdepth 2 -type d \
+              | sed 's|cloudgoat/scenarios/||' \
+              | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
 
           echo "Scenarios to test: $MODIFIED_SCENARIOS"
           echo "scenarios=$MODIFIED_SCENARIOS" >> $GITHUB_OUTPUT
-
+          
   validate-new-scenarios:
     needs: detect-modified-scenarios
     runs-on: ubuntu-latest
