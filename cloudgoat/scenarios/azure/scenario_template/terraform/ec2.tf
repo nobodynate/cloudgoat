@@ -19,7 +19,7 @@ resource "aws_instance" "instance" {
   associate_public_ip_address = true
 
   vpc_security_group_ids = [
-    aws_security_group.sg.id
+    aws_security_xgroup.sg.id
   ]
 
   tags = {
