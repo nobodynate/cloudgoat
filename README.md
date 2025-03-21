@@ -3,7 +3,7 @@
 
 _CloudGoat is Rhino Security Labs' "Vulnerable by Design" cloud deployment tool._
 
-<p align="center">
+<p align="center">a
   <img src="https://rhinosecuritylabs.com/wp-content/uploads/2018/07/cloudgoat-e1533043938802-1140x400.jpg" width=350/>
 </p>
 
