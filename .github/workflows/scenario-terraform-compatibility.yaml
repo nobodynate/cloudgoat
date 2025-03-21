@@ -17,19 +17,27 @@ jobs:
         with:
           fetch-depth: 0 # Ensures full history for diff calculations
 
+      - name: Fetch base branch explicitly
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+
       - name: Get modified scenarios dynamically
         id: get-scenarios
         run: |
           BASE_COMMIT=${{ github.event.pull_request.base.sha }}
-
-          # Get changed paths like: cloudgoat/scenarios/aws/scenario-name/*
+          
+          echo "Base commit: $BASE_COMMIT"
+          echo "Head commit: $(git rev-parse HEAD)"
+          
+          # Get the list of modified or added scenario directories
           MODIFIED_SCENARIOS=$(git diff --name-only "$BASE_COMMIT" HEAD \
-            | grep -oE 'cloudgoat/scenarios/[^/]+/[^/]+' \
+            | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+' \
+            | cut -d/ -f3,4 \
             | sort -u \
-            | sed 's|cloudgoat/scenarios/||' \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
-          # If no modified scenarios were found, fallback to listing all scenarios
+          echo "MODIFIED_SCENARIOS=$MODIFIED_SCENARIOS"
+
           if [ "$MODIFIED_SCENARIOS" == "[]" ] || [ -z "$MODIFIED_SCENARIOS" ]; then
             echo "No modified scenarios detected. Listing all scenarios..."
             MODIFIED_SCENARIOS=$(find cloudgoat/scenarios/ -mindepth 2 -maxdepth 2 -type d \
@@ -39,7 +47,7 @@ jobs:
 
           echo "Scenarios to test: $MODIFIED_SCENARIOS"
           echo "scenarios=$MODIFIED_SCENARIOS" >> $GITHUB_OUTPUT
-          
+                    
   validate-new-scenarios:
     needs: detect-modified-scenarios
     runs-on: ubuntu-latest
