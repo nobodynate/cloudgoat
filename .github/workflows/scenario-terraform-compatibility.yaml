@@ -113,9 +113,11 @@ jobs:
           for var in $REQUIRED_VARS; do
             if [[ -n "${VAR_MAP[$var]}" ]]; then
               echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
+            else
+              echo "  \"$var\": \"junk\"," >> $TFVARS_FILE
             fi
           done
-
+          
           if grep -q 'variable "cg_whitelist"' variables.tf && ! grep -q '"cg_whitelist"' "$TFVARS_FILE"; then
             var="cg_whitelist"
             echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
