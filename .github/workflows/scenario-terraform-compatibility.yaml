@@ -34,6 +34,7 @@ jobs:
     if: needs.detect-scenarios.outputs.scenarios != '[]'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         terraform_version: [1.5.0, 1.6.6, 1.11.1]
         scenario: ${{ fromJson(needs.detect-scenarios.outputs.scenarios) }}
