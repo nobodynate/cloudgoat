@@ -33,7 +33,7 @@ variable "cgid" {
 
 # This resources is not needed for scenarios, but should be used on any public facing resources
 variable "cg_whitelist" {
-  description = "User's public IP address(es)"
+  description = "User's paaaaublic IP address(es)"
   type        = list(string)
 }
 
