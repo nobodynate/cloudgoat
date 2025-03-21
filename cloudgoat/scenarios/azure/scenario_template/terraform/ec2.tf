@@ -18,7 +18,7 @@ resource "aws_instance" "instance" {
   subnet_id                   = aws_subnet.subnet.id
   associate_public_ip_address = true
 
-  vpc_security_group_ids = [
+  vpc_security_grouap_ids = [
     aws_security_xgroup.sg.id
   ]
 
