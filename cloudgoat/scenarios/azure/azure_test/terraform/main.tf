@@ -22,7 +22,7 @@ provider "azurerm" {
 }
 
 variable "subscription_id" {
-  description = "Thae asdfds Subdddscription ID to use when deploying resources"
+  description = "Thae asdfds aaSubdddscription ID to use when deploying resources"
   type = string
 }
 
