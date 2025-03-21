@@ -12,7 +12,7 @@ resource "aws_iam_role" "ec2" {
         Effect = "Allow"
       }
     ]
-  })k
+  })kl
 }
 
 # Role Policy for EC2
