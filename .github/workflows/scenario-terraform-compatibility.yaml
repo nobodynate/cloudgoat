@@ -99,7 +99,9 @@ jobs:
           fi
 
           cd terraform
-          REQUIRED_VARS=$(grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf | sort -u)
+          REQUIRED_USED_VARS=$(grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf | sort -u)
+          REQUIRED_DECALRED_VARS=$(grep -ohP '(?<=variable \")[a-zA-Z0-9_]+' *.tf | sort -u)
+          REQUIRED_VARS=$(cat $REQUIRED_USED_VARS $REQUIRED_DECLARED_VARS | sort -u)
           TFVARS_FILE="terraform.auto.tfvars.json"
           echo "{" > $TFVARS_FILE
           declare -A VAR_MAP
@@ -118,7 +120,7 @@ jobs:
             fi
           done
 
-          if grep -q 'variable "cg_whitelist"' variables.tf && ! grep -q '"cg_whitelist"' "$TFVARS_FILE"; then
+          if grep -q 'variable "cg_whitelist"' *.tf && ! grep -q '"cg_whitelist"' "$TFVARS_FILE"; then
             var="cg_whitelist"
             echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
           fi
