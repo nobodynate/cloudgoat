@@ -11,6 +11,8 @@ jobs:
     outputs:
       scenarios: ${{ steps.filter.outputs.scenarios }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Get modified Terraform scenarios
         id: filter
         env:
