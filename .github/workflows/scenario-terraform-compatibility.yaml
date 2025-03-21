@@ -38,7 +38,7 @@ jobs:
 
   validate-new-scenarios:
     needs: detect-modified-scenarios
-    if: ${{ needs.detect-modified-scenarios.outputs.scenarios }}
+    if: ${{ needs.detect-modified-scenarios.outputs.scenarios != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
