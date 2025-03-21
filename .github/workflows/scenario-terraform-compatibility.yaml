@@ -2,9 +2,7 @@ name: Scenario Terraform validation
 
 on:
   pull_request_target:
-    paths:
-      - "cloudgoat/scenarios/**"
-  workflow_dispatch:
+    types: [opened, synchronize, reopened]
 
 jobs:
   detect-modified-scenarios:
@@ -12,31 +10,27 @@ jobs:
     outputs:
       scenarios: ${{ steps.get-scenarios.outputs.scenarios }}
     steps:
-      - name: Checkout full repository
+      - name: Checkout PR code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Ensures full history for diff calculations
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
-      - name: Fetch base branch explicitly
-        run: |
-          git fetch origin ${{ github.event.pull_request.base.ref }}
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
 
-      - name: Get modified scenarios dynamically
+      - name: Get modified scenarios
         id: get-scenarios
         run: |
-          BASE_COMMIT=${{ github.event.pull_request.base.sha }}
-          
+          BASE_COMMIT=$(git rev-parse origin/${{ github.event.pull_request.base.ref }})
           echo "Base commit: $BASE_COMMIT"
-          echo "Head commit: $(git rev-parse HEAD)"
-          
-          # Get the list of modified or added scenario directories
+          echo "HEAD: $(git rev-parse HEAD)"
+
           MODIFIED_SCENARIOS=$(git diff --name-only "$BASE_COMMIT" HEAD \
             | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+' \
             | cut -d/ -f3,4 \
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
-
-          echo "MODIFIED_SCENARIOS=$MODIFIED_SCENARIOS"
 
           if [ "$MODIFIED_SCENARIOS" == "[]" ] || [ -z "$MODIFIED_SCENARIOS" ]; then
             echo "No modified scenarios detected. Listing all scenarios..."
