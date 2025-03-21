@@ -114,7 +114,7 @@ jobs:
           VAR_MAP["profile"]='"default"'
           VAR_MAP["region"]='"us-east-1"'
           VAR_MAP["location"]='"eastus"'
-          VAR_MAP["subscription_id"]='"$AZURE_SUBSCRIPTION_ID"''
+          VAR_MAP["subscription_id"]='"$AZURE_SUBSCRIPTION_ID"'
           VAR_MAP["user_email"]='"cloudgoat@rhinosecuritylabs.com"'
 
           for var in $REQUIRED_VARS; do
