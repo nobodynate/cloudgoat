@@ -1,7 +1,7 @@
 name: Scenario Terraform validation
 
 on:
-  pull_request_target:
+  pull_request:
     paths:
       - 'cloudgoat/scenarios/**'
 
@@ -14,7 +14,6 @@ jobs:
       - name: Checkout PR code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Fetch base branch
@@ -22,10 +21,8 @@ jobs:
 
       - name: Get modified Terraform scenarios
         id: get-scenarios
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path')
+          FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} HEAD)
 
           SCENARIOS=$(echo "$FILES" \
             | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+/terraform/' \
@@ -33,7 +30,6 @@ jobs:
             | sort -u \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
-          # Fallback to empty array if SCENARIOS is empty
           echo "scenarios=${SCENARIOS:-[]}" >> "$GITHUB_OUTPUT"
 
   validate-new-scenarios:
@@ -44,9 +40,9 @@ jobs:
       fail-fast: false
       matrix:
         terraform_version: [
-          1.5.0,  # Min supported version
-          1.6.6,  # Latest LTS
-          1.11.1, # Latest
+          1.5.0,
+          1.6.6,
+          1.11.1,
         ]
         scenario: ${{ fromJson(needs.detect-modified-scenarios.outputs.scenarios || '[]') }}
 
@@ -56,30 +52,12 @@ jobs:
       - name: Checkout PR code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Install Terraform ${{ matrix.terraform_version }}
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ matrix.terraform_version }}
-
-      - name: Configure AWS Credentials
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/config
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
-          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
-          echo "region = $AWS_REGION" >> ~/.aws/config
-          export AWS_PROFILE=default
-
-      - name: Configure Azure Credentials
-        run: az login --service-principal -u ${{ secrets.AZURE_APP_ID }} -p ${{ secrets.AZURE_PASSWORD }} --tenant ${{ secrets.AZURE_TENANT }}
 
       - name: Run Terraform Validation - ${{ matrix.scenario }}
         run: |
@@ -93,7 +71,6 @@ jobs:
             exit 1
           fi
           cd "$SCENARIO_DIR"
-          echo "1.1.1.1/32" > whitelist.txt
 
           if [ -f "start.sh" ]; then
             sh ./start.sh || { echo "❌ start.sh failed"; exit 1; }
@@ -101,41 +78,7 @@ jobs:
 
           cd terraform
 
-          # Scan the TF files and find declared and used variables
-          REQUIRED_VARS=$((grep -ohP '(?<=variable \")[a-zA-Z0-9_]+' *.tf && grep -ohP '(?<=var\.)[a-zA-Z0-9_]+' *.tf) | sort -u)
-          
-          # Populate TF Vars
-          TFVARS_FILE="terraform.auto.tfvars.json"
-          echo "{" > $TFVARS_FILE
-          declare -A VAR_MAP
-          VAR_MAP["cg_whitelist"]='["1.1.1.1/32"]'
-          VAR_MAP["cgid"]='"github-ci-test"'
-          VAR_MAP["profile"]='"default"'
-          VAR_MAP["region"]='"us-east-1"'
-          VAR_MAP["location"]='"eastus"'
-          VAR_MAP["subscription_id"]='"${{ secrets.AZURE_SUBSCRIPTION_ID }}"'
-          VAR_MAP["user_email"]='"cloudgoat@rhinosecuritylabs.com"'
-
-          for var in $REQUIRED_VARS; do
-            if [[ -n "${VAR_MAP[$var]}" ]]; then
-              echo "  \"$var\": ${VAR_MAP[$var]}," >> $TFVARS_FILE
-            else
-              echo "  \"$var\": \"junk\"," >> $TFVARS_FILE
-            fi
-          done
-
-          sed -i '$ s/,$//' $TFVARS_FILE
-          echo "}" >> $TFVARS_FILE
-
-          echo "Generated Terraform Variables:"
-          cat $TFVARS_FILE
-
-          # Validate the Terraform files.
           terraform init || { echo "❌ Init failed"; exit 1; }
           terraform validate || { echo "❌ Validation failed"; exit 1; }
-          terraform plan -out=tfplan -input=false -var-file=$TFVARS_FILE || {
-            echo "❌ Plan failed"; 
-            exit 1;
-          }
           echo "✔️ Success: ${{ matrix.scenario }}"
           echo "::endgroup::"
