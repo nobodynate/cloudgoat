@@ -4,5 +4,5 @@ output "initial_low_priv_credentials" {
 Access Key: ${aws_iam_access_key.low_priv_key.id}
 Secret Key: ${aws_iam_access_key.low_priv_key.secret}
 EOF
-  sensitive = trueaaaa
+  sensitive = true
 }

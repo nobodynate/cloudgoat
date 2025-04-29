@@ -4,7 +4,7 @@
 
 In this scenario, you are provided with low-privileged AWS credentials. Your task is to enumerate Elastic Beanstalk applications and environments, discover misconfigured environment variables that leak secondary credentials, and then use these credentials to enumerate IAM permissions. By exploiting the ability to create an access key for an administrator user, you will escalate your privileges and ultimately retrieve the final flag stored in AWS Secrets Manager.
 
-## Detailed Walkthrough
+## Detailed Walkthroughasdf
 
 ### Configuring the AWS Keys
 
