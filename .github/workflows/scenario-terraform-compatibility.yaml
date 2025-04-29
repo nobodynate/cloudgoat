@@ -11,24 +11,23 @@ jobs:
     outputs:
       scenarios: ${{ steps.get-scenarios.outputs.scenarios }}
     steps:
-    - name: Checkout base and PR branches
-      run: |
-        git fetch origin +refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/base
-        git fetch origin +refs/pull/${{ github.event.pull_request.number }}/head:refs/remotes/origin/pr
-    
-    - name: Get modified Terraform scenarios
-      id: get-scenarios
-      run: |
-        git diff --name-only origin/base...origin/pr > changed_files.txt
-    
-        SCENARIOS=$(cat changed_files.txt \
-          | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+/terraform/' \
-          | cut -d/ -f3,4 \
-          | sort -u \
-          | jq -R -s -c 'split("\n") | map(select(length > 0))')
-    
-        echo "scenarios=${SCENARIOS:-[]}" >> "$GITHUB_OUTPUT"
-    
+      - name: Checkout full repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0      
+      - name: Detect Modified Scenarios
+        id: get-scenarios
+        run: |
+          # Detect modified scenarios
+          MODIFIED_SCENARIOS=$(git diff --name-only HEAD^ HEAD | grep -oE 'cloudgoat/scenarios/[^/]+' | sort -u | sed 's/cloudgoat\/scenarios\///' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          # If no modified scenarios were found, fallback to listing all scenarios
+          if [ "$MODIFIED_SCENARIOS" == "[]" ] || [ -z "$MODIFIED_SCENARIOS" ]; then
+            echo "No modified scenarios detected. Listing all scenarios..."
+            MODIFIED_SCENARIOS=$(ls -1 cloudgoat/scenarios/ | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          fi
+          echo "Scenarios to test: $MODIFIED_SCENARIOS"
+          echo "scenarios=$MODIFIED_SCENARIOS" >> $GITHUB_OUTPUT
+
   validate-new-scenarios:
     needs: detect-modified-scenarios
     if: ${{ needs.detect-modified-scenarios.outputs.scenarios != '[]' }}
