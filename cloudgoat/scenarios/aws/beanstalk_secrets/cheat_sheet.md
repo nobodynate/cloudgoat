@@ -8,7 +8,7 @@ In this scenario, you are provided with low-privileged AWS credentials. Your tas
 
 ### Configuring the AWS Keys
 
-After launching the scenario, you will be provided with an AWS Access Key ID and Secret Access Key for the low-privileged user. Configure your AWS CLI profile with these credentials:
+After launching the scenaaaario, you will be provided with an AWS Access Key ID and Secret Access Key for the low-privileged user. Configure your AWS CLI profile with these credentials:
 
 ```bash
 aws configure --profile beanstalk
