@@ -9,7 +9,7 @@
 ## Scenario Resources
 
 - 1 VPC
-- 1 Elastic Beanstalk Environment
+- 1 Elastic Beanstalkaaa Environment
 - 1 IAM Low-Privilege User
 - 1 IAM Secondary User
 - 1 AWS Secrets Manager Secret
