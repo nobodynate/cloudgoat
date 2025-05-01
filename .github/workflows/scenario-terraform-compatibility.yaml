@@ -16,7 +16,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path')
+          FILES=$(curl -s -H "Accept: application/vnd.github+json" "${{ github.event.pull_request.url }}/files" | jq -r '.[].filename')
 
           SCENARIOS=$(echo "$FILES" \
             | grep -E '^cloudgoat/scenarios/[^/]+/[^/]+/terraform/' \
