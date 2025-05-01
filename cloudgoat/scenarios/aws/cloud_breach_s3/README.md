@@ -6,7 +6,7 @@
 
 **Command:** `$ ./cloudgoat.py create cloud_breach_s3`
 
-## Scenario Resources
+## Scenario Resourcesa
 
 * 1 VPC with:
   * EC2 x 1
