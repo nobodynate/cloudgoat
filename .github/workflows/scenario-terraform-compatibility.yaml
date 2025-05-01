@@ -11,15 +11,6 @@ jobs:
     outputs:
       scenarios: ${{ steps.get-scenarios.outputs.scenarios }}
     steps:
-      - name: Checkout PR code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-
-      - name: Fetch base branch
-        run: git fetch origin ${{ github.event.pull_request.base.ref }}
-
       - name: Get modified Terraform scenarios
         id: get-scenarios
         env:
@@ -53,12 +44,6 @@ jobs:
     name: Terraform ${{ matrix.terraform_version }} - ${{ matrix.scenario }}
 
     steps:
-      - name: Checkout PR code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-
       - name: Install Terraform ${{ matrix.terraform_version }}
         uses: hashicorp/setup-terraform@v2
         with:
