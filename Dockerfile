@@ -4,6 +4,7 @@ LABEL maintainer="Rhino Assessment Team <cloudgoat@rhinosecuritylabs.com>"
 LABEL cloudgoat.version="2.2.1"
 
 # Install bash, necessary tools, AWS CLI, and Terraform in a single layer
+#test
 RUN apk add --no-cache \
     bash \
     bash-completion \
